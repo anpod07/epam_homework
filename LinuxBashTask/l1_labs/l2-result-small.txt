@@ -1,0 +1,65 @@
+The most requested IP: 157.55.39.250 :: 62 requests
+
+The most requested page: /sitemap1.xml.gz :: 8 requests
+
+Requests from each IP:
+157.55.39.250 :: 62 requests
+46.29.2.62 :: 61 requests
+207.46.13.48 :: 34 requests
+178.76.227.154 :: 10 requests
+176.59.119.104 :: 7 requests
+157.55.39.174 :: 4 requests
+37.140.141.30 :: 3 requests
+66.249.78.58 :: 2 requests
+217.69.134.29 :: 2 requests
+157.55.39.182 :: 2 requests
+95.108.158.190 :: 1 requests
+93.158.178.129 :: 1 requests
+66.249.78.72 :: 1 requests
+66.249.78.65 :: 1 requests
+66.249.69.39 :: 1 requests
+5.255.253.74 :: 1 requests
+5.255.253.45 :: 1 requests
+217.69.134.39 :: 1 requests
+217.69.134.15 :: 1 requests
+217.69.134.13 :: 1 requests
+217.69.134.12 :: 1 requests
+217.69.134.11 :: 1 requests
+213.87.151.38 :: 1 requests
+185.53.44.186 :: 1 requests
+
+Non-existent pages:
+157.55.39.174 - - [30/Sep/2015:00:27:41 +0300] "GET /vote/1279 HTTP/1.0" 302 - "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"
+217.69.134.39 - - [30/Sep/2015:00:27:51 +0300] "GET /sitemap1.xml.gz HTTP/1.0" 304 - "-" "Mozilla/5.0 (compatible; Linux x86_64; Mail.RU_Bot/Fast/2.0; +http://go.mail.ru/help/robots)"
+217.69.134.15 - - [30/Sep/2015:00:46:33 +0300] "GET /sitemap1.xml.gz HTTP/1.0" 304 - "-" "Mozilla/5.0 (compatible; Linux x86_64; Mail.RU_Bot/Fast/2.0; +http://go.mail.ru/help/robots)"
+217.69.134.29 - - [30/Sep/2015:01:04:17 +0300] "GET /sitemap1.xml.gz HTTP/1.0" 304 - "-" "Mozilla/5.0 (compatible; Linux x86_64; Mail.RU_Bot/Fast/2.0; +http://go.mail.ru/help/robots)"
+217.69.134.11 - - [30/Sep/2015:01:20:36 +0300] "GET /sitemap1.xml.gz HTTP/1.0" 304 - "-" "Mozilla/5.0 (compatible; Linux x86_64; Mail.RU_Bot/Fast/2.0; +http://go.mail.ru/help/robots)"
+217.69.134.12 - - [30/Sep/2015:01:38:33 +0300] "GET /sitemap1.xml.gz HTTP/1.0" 304 - "-" "Mozilla/5.0 (compatible; Linux x86_64; Mail.RU_Bot/Fast/2.0; +http://go.mail.ru/help/robots)"
+217.69.134.13 - - [30/Sep/2015:01:57:09 +0300] "GET /sitemap1.xml.gz HTTP/1.0" 304 - "-" "Mozilla/5.0 (compatible; Linux x86_64; Mail.RU_Bot/Fast/2.0; +http://go.mail.ru/help/robots)"
+207.46.13.48 - - [30/Sep/2015:02:05:47 +0300] "GET /search/index.php HTTP/1.0" 500 2 "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"
+157.55.39.250 - - [30/Sep/2015:02:11:08 +0300] "GET /vote/1353 HTTP/1.0" 302 - "-" "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)"
+217.69.134.29 - - [30/Sep/2015:02:17:00 +0300] "GET /sitemap1.xml.gz HTTP/1.0" 304 - "-" "Mozilla/5.0 (compatible; Linux x86_64; Mail.RU_Bot/Fast/2.0; +http://go.mail.ru/help/robots)"
+
+Time with the most requests, by minutes: 30/Sep/2015:02:26 :: 60 requests
+
+Search bots (UA + IP):
+bingbot/2.0 157.55.39.174
+bingbot/2.0 157.55.39.182
+bingbot/2.0 157.55.39.250
+bingbot/2.0 207.46.13.48
+Googlebot/2.1 66.249.69.39
+Googlebot/2.1 66.249.78.58
+Googlebot/2.1 66.249.78.65
+Mail.RU_Bot/Fast/2.0 217.69.134.11
+Mail.RU_Bot/Fast/2.0 217.69.134.12
+Mail.RU_Bot/Fast/2.0 217.69.134.13
+Mail.RU_Bot/Fast/2.0 217.69.134.15
+Mail.RU_Bot/Fast/2.0 217.69.134.29
+Mail.RU_Bot/Fast/2.0 217.69.134.39
+Mediapartners-Google/2.1 66.249.78.58
+XoviBot/2.0 185.53.44.186
+YandexBot/3.0 37.140.141.30
+YandexBot/3.0 5.255.253.45
+YandexBot/3.0 5.255.253.74
+YandexBot/3.0 93.158.178.129
+YandexBot/3.0 95.108.158.190

@@ -1,0 +1,184 @@
+- name: create RDS/mysql instance
+  hosts: local
+  connection: local
+  gather_facts: false
+  vars:
+#    sg_subnet_1: subnet-0948be4e0e1067bab
+#    sg_subnet_2: subnet-07051ec5361506120
+#    security_group: sg-03187c7249d17e2e1
+    allocated_storage: 20
+    rds_type: db.t3.micro
+    storage_type: gp2
+    region: eu-central-1
+    az_id: eu-central-1a
+    db_name: db_test
+    engine: mysql
+    engine_version: 8.0.28
+    master_user_password: 07secret07
+    master_username: admin
+    db_port: 3306
+    monitoring_role: arn:aws:iam::516812596811:role/rds-monitoring-role
+    aws_access_key: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          39626162363336336233313131363932666435613633616530336337663865623131333736613634
+          3430363463356138623130346462323339653564333565340a393139663231653939383130393536
+          36363137396461353337363235373865623238663262376133643135383237353431316632623537
+          6335633565316136360a323133663834663931316361326361386439363933623639663235646363
+          30343332616638396238333465613563616566656332343036386364363030343834
+    aws_secret_key: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36653562646361326164366633333661333532333361383365613863346162653463346335346565
+          6261623633306138666661303533313230623563323639300a383530663235666232383133326264
+          31383837643739366163343539313965656136653334323632643961363939613439666235646135
+          3262343436643761360a333333626635343237356332333165303033323333313764306366333964
+          66616635343866303634326232353830653133396336646364333164333664336262346138323963
+          6566643065633036646666613437346336663631316436323963
+
+  tasks:
+# https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_net_info_module.html
+  - name: Gather information about VPC
+    amazon.aws.ec2_vpc_net_info:
+      region: "{{ region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      filters:
+        "tag:Name": ansible_VPC_RDS
+    register: vpcinfo
+#  - debug: var=vpcinfo
+  - name: get ID of ansible_VPC_RDS
+    set_fact: myvpc="{{ vpcinfo.vpcs | map(attribute='vpc_id') | join(',') }}"
+  - debug:
+      msg:
+      - "Custom VPC: {{ myvpc }}"
+
+# https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_subnet_info_module.html
+  - name: Gather information about ansible_RDS_Private_AZ_1 subnet
+    amazon.aws.ec2_vpc_subnet_info:
+      region: "{{ region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      filters:
+        vpc-id: "{{ myvpc }}"
+        "tag:Name": ansible_RDS_Private_AZ_1
+    register: subinfo
+  - name: get ID of ansible_RDS_Private_AZ_1
+    set_fact: praz1="{{ subinfo.subnets | map(attribute='subnet_id') | join(',') }}"
+
+  - name: Gather information about ansible_RDS_Private_AZ_2 subnet
+    amazon.aws.ec2_vpc_subnet_info:
+      region: "{{ region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      filters:
+        vpc-id: "{{ myvpc }}"
+        "tag:Name": ansible_RDS_Private_AZ_2
+    register: subinfo
+  - name: get ID of ansible_RDS_Private_AZ_2
+    set_fact: praz2="{{ subinfo.subnets | map(attribute='subnet_id') | join(',') }}"
+
+  - debug:
+      msg:
+      - "ansible_RDS_Private_AZ_1: {{ praz1 }}"
+      - "ansible_RDS_Private_AZ_2: {{ praz2 }}"
+
+# https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_group_info_module.html
+  - name: Gather information about ansible-RDS_SSH-MYSQL security group
+    amazon.aws.ec2_group_info:
+      region: "{{ region }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      filters:
+        vpc-id: "{{ myvpc }}"
+        "tag:Name": ansible_SG_RDS
+    register: sginfo
+  - name: get ID of ansible-RDS_SSH-MYSQL
+    set_fact: sgrds="{{ sginfo.security_groups | map(attribute='group_id') | join(',') }}"
+  - debug:
+      msg:
+      - "RDS Security Group: {{ sgrds }}"
+
+# https://docs.ansible.com/ansible/latest/collections/community/aws/rds_subnet_group_module.html
+  - name: create an RDS Subnet Group - Private
+    community.aws.rds_subnet_group:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      region: "{{ region }}"
+      state: present
+      name: rds-mysql-subnet-group
+      description: rds-mysql-subnet-group
+      subnets:
+        - "{{ praz1 }}"
+        - "{{ praz2 }}"
+    register: subgroup
+  - debug: var=subgroup.subnet_group.name
+
+# https://docs.ansible.com/ansible/latest/collections/community/aws/rds_option_group_module.html
+  - name: create an RDS Mysql Option Group
+    community.aws.rds_option_group:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      state: present
+      option_group_name: rds-mysql-option-group
+      engine_name: mysql
+      major_engine_version: 8.0
+      option_group_description: rds-mysql-option-group
+      apply_immediately: true
+      options:
+        - option_name: MEMCACHED
+          port: 11211
+          vpc_security_group_memberships:
+            - "{{ sgrds }}"
+          option_settings:
+            - name: MAX_SIMULTANEOUS_CONNECTIONS
+              value: "20"
+            - name: CHUNK_SIZE_GROWTH_FACTOR
+              value: "1.25"
+    register: optgr
+  - debug: var=optgr.option_group_name
+
+# https://docs.ansible.com/ansible/latest/collections/community/aws/rds_param_group_module.html
+  - name: add a RDS Parameter Group
+    community.aws.rds_param_group:
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      state: present
+      name: rds-mysql-param-group
+      description: rds-mysql-param-group
+      engine: mysql8.0
+      params:
+        auto_increment_increment: "42K"
+    register: pargr
+  - debug: var=pargr.db_parameter_group_name
+
+# https://docs.ansible.com/ansible/latest/collections/community/aws/rds_instance_module.html
+  - name: create an RDS instance
+    rds_instance:
+      allocated_storage: "{{ allocated_storage }}"
+      auto_minor_version_upgrade: no
+      availability_zone: "{{ az_id }}"
+      aws_access_key: "{{ aws_access_key }}"
+      aws_secret_key: "{{ aws_secret_key }}"
+      db_instance_class: "{{ rds_type }}"
+      db_instance_identifier: "rds-mysql"
+      db_name: "{{ db_name }}"
+      db_parameter_group_name: "{{ pargr.db_parameter_group_name }}"
+      db_subnet_group_name: "{{ subgroup.subnet_group.name }}"
+      engine: "{{ engine }}"
+      engine_version: "{{ engine_version }}"
+      master_user_password: "{{ master_user_password }}"
+      master_username: "{{ master_username }}"
+      max_allocated_storage: "{{ allocated_storage }}"
+      monitoring_interval: 60
+      monitoring_role_arn: "{{ monitoring_role }}"
+      option_group_name: "{{ optgr.option_group_name }}"
+      port: "{{ db_port }}"
+      publicly_accessible: no
+      region: "{{ region }}"
+      state: "present"
+      storage_type: "{{ storage_type }}"
+      tags:
+        Name: ansible_RDS_MYSQL
+        owner: ninja
+      vpc_security_group_ids: "{{ sgrds }}"
+    register: rdsmysql
+  - debug: var=rdsmysql.endpoint.address

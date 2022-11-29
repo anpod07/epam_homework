@@ -1,0 +1,9 @@
+- name: display info about our EC2
+  hosts: epam
+  become: yes
+
+  tasks:
+  - debug:
+      msg:
+      - "Public IP:  {{ansible_default_ipv4.address}}"
+      - "OS:         {{ansible_lsb}}"

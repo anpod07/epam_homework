@@ -1,0 +1,4 @@
+FROM mysql:8.0.30
+ENV MYSQL_ROOT_PASSWORD secret
+COPY ./db_test.sql /docker-entrypoint-initdb.d/
+CMD ["docker-entrypoint.sh","mysqld"]

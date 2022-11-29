@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		  content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>CUP web</title>
+</head>
+<body>
+    <script type="text/javascript">
+        document.write("Server's IP: <b>"+location.host+"</b><br><br>");
+    </script>
+	<h3>Выполнение SQL-запроса:</h3>
+	<form action="/" method="post">
+		<input type="text" name="sqlquery" value="{{ sqlquery }}" size="100"><br>
+		<input type="submit" name="btn_sqlquery" value="Выполнить"><br>
+	</form>
+	<br>
+<!-- https://stackoverflow.com/questions/21286830/how-can-i-check-for-loop-count-and-whether-it-is-even-or-odd -->
+	{% for vi in viewall %}
+	    {% if loop.index is divisibleby(2) %}
+			{% for el in vi %}
+		    	{% set i = 0 %}
+			    <tr>
+			    {% for i in range(el|count) %}
+				<td>{{ el[i] }}</td>
+			    {% endfor %}
+			    </tr>
+			{% endfor %}
+			</table>
+		{% else %}
+			<br><table border="1"><tr>
+			{% for el in vi %}
+				<th>{{ el }}</th>
+			{% endfor %}
+			</tr>
+		{% endif %}
+	{% endfor %}
+	<br>{{ sqlstatus }}
+</body>
+</html>

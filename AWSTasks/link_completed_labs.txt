@@ -1,0 +1,28 @@
+﻿18. ...the list of AWS services with which the student worked within the educational program or earlier 
+ IAM
+ EC2
+ S3
+ Elastic Beanstalk
+ RDS
+ Route53
+ ClowdWatch
+ SNS
+ Resource Groups and Tag Editor
+ VPC
+ Cost Explorer
+ AWS Pricing Calculator
+ CloudShell
+ Elastic Load Balancing
+ Certificate Manager
+ Systems Manager
+ Lambda
+
+
+ ... and the full list with links of completed labs:
+https://aws.amazon.com/ru/getting-started/hands-on/launch-a-virtual-machine/
+https://aws.amazon.com/ru/getting-started/hands-on/launch-a-wordpress-website/?trk=gs_card
+https://aws.amazon.com/ru/getting-started/hands-on/launch-windows-vm/
+https://aws.amazon.com/ru/getting-started/hands-on/remotely-run-commands-ec2-instance-systems-manager/
+https://aws.amazon.com/ru/getting-started/hands-on/run-serverless-code/
+https://aws.amazon.com/ru/getting-started/hands-on/backup-files-to-amazon-s3/
+

@@ -2,7 +2,7 @@
 localhost
 
 [epam]
-3.70.205.180  ansible_user=ubuntu  ansible_ssh_private_key_file=/home/andr/.ssh/SSH_key_Frankfurt.pem
-35.158.122.29  ansible_user=ubuntu  ansible_ssh_private_key_file=/home/andr/.ssh/SSH_key_Frankfurt.pem
-3.76.80.232  ansible_user=ubuntu  ansible_ssh_private_key_file=/home/andr/.ssh/SSH_key_Frankfurt.pem
-3.71.11.165  ansible_user=ubuntu  ansible_ssh_private_key_file=/home/andr/.ssh/SSH_key_Frankfurt.pem
+3.64.10.247  ansible_user=ubuntu  ansible_ssh_private_key_file=~/.ssh/SSH_key_Frankfurt.pem
+3.124.190.134  ansible_user=ubuntu  ansible_ssh_private_key_file=~/.ssh/SSH_key_Frankfurt.pem
+18.185.87.21  ansible_user=ubuntu  ansible_ssh_private_key_file=~/.ssh/SSH_key_Frankfurt.pem
+18.193.118.75  ansible_user=ubuntu  ansible_ssh_private_key_file=~/.ssh/SSH_key_Frankfurt.pem

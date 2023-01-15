@@ -1,0 +1,86 @@
+=====
+Azure
+=====
+
+1. создание аккаунта 'Microsoft Azure Account'
+https://azure.microsoft.com/en-us/free/
+
+   create 'Azure DevOps account'
+https://azure.microsoft.com/en-us/products/devops/
+
+   create 'azure devops organization'
+https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/create-organization?view=azure-devops
+https://aex.dev.azure.com/me?mkt=ru-RU
+	name: /anpod07
+   create project
+	name: epam_proj
+	https://dev.azure.com/anpod07/epam_proj
+
+   create github repo
+	name: anpod07/azure
+
+   create 'service connection'
+	https://dev.azure.com/anpod07/epam_proj/_settings/adminservices
+
+   import my github repo
+	https://dev.azure.com/anpod07/epam_proj/_git/epam_proj
+
+   create 'Branch policie'
+	https://dev.azure.com/anpod07/epam_proj/_settings/repositories?_a=policiesMid&repo=7f265826-c3f9-4f4a-8653-afedc3cfc0d3&refs=refs/heads/main
+
+   ---
+
+   follow the link:
+	https://azuredevopslabs.com/labs/vstsextend/terraform/
+
+   ogranization settings
+	https://dev.azure.com/anpod07/_settings/organizationPolicy
+
+   при выполнении pipeline выскочила ошибка:
+	https://stackoverflow.com/questions/68405027/how-to-resolve-no-hosted-parallelism-has-been-purchased-or-granted-in-free-tie
+   создаем собственный agent для запуска моего pipeline:
+	https://learn.microsoft.com/ru-ru/azure/devops/pipelines/agents/v2-windows?view=azure-devops
+   Проверка подлинности с помощью личного маркера доступа (PAT):
+	https://learn.microsoft.com/ru-ru/azure/devops/pipelines/agents/v2-windows?view=azure-devops#permissions
+     Token: rqszrrmvfuhhrlivg4acgkxoff34g34x7lwkcctbu4hp4vchmttq
+   Запускаем agent, проверяем его статус 'online'.
+	PS c:\agent> .\run.cmd
+   Правим agent на 'mypool' в нашем pipeline, сохраняем и запускаем 'save and start queue'
+   Получаем ошибку при сборке:
+	choco the term 'choco' is not recognized as the name of a cmdlet function
+   Ставим 'choco' на хост с agent-ом:
+	https://chocolatey.org/install
+   Не хватает прав для установки 'dotnet 2.0', выполняем установку на agent вручную:
+	PS> choco install dotnetcore-sdk --version=2.0.0
+   Terraform-CI успешно завершен, а вот pipeline почему-то не смог завершиться, хотя артефакты на выходе получены и все 11 тестов - пройдены.
+     Пробую запуститься через YAML pipeline:
+     меняю
+pool:
+  vmimage: 'windows-2019'
+     на
+pool: mypool2
+     снова ошибка: нужна доустановка модуля 'azureps' на agent:
+	https://learn.microsoft.com/ru-ru/powershell/azure/install-az-ps?view=azps-9.3.0
+     сначала обновляю powershell до версии 7 или выше:
+	https://learn.microsoft.com/ru-ru/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

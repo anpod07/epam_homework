@@ -1,6 +1,7 @@
 Epam homework tasks
 -------------------
-AWSTasks		: AWS homework<br>
+AWSTasks			: AWS homework<br>
+AzureTask			: Azure homework<br>
 DatabasesTask		: Database homework<br>
 LinuxBashTask		: Bash homework, included: Level_0 & Level_1 tasks<br>
 LinuxNetworkingTask	: Network homework<br>

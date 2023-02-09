@@ -1,0 +1,115 @@
+# https://dev.to/aws-builders/build-default-amazon-vpc-using-ansible-4bdo
+- name: create aws VPC
+  hosts: local
+  connection: local
+  gather_facts: false
+  vars:
+    region: eu-central-1
+    cidr_block: 172.16.0.0/16
+    aws_access_key: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          39626162363336336233313131363932666435613633616530336337663865623131333736613634
+          3430363463356138623130346462323339653564333565340a393139663231653939383130393536
+          36363137396461353337363235373865623238663262376133643135383237353431316632623537
+          6335633565316136360a323133663834663931316361326361386439363933623639663235646363
+          30343332616638396238333465613563616566656332343036386364363030343834
+    aws_secret_key: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          36653562646361326164366633333661333532333361383365613863346162653463346335346565
+          6261623633306138666661303533313230623563323639300a383530663235666232383133326264
+          31383837643739366163343539313965656136653334323632643961363939613439666235646135
+          3262343436643761360a333333626635343237356332333165303033323333313764306366333964
+          66616635343866303634326232353830653133396336646364333164333664336262346138323963
+          6566643065633036646666613437346336663631316436323963
+
+  tasks:
+# https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_net_module.html
+    - name: create VPC
+      amazon.aws.ec2_vpc_net:
+        name: my_vpc
+        cidr_block: "{{ cidr_block }}"
+        region: "{{ region }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        tags:
+          Name: ansible_VPC
+          owner: ninja
+      register: vpc
+    - debug: var=vpc.vpc.id
+
+# https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_subnet_module.html
+    - name: create Subnet for AZ-1
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc.vpc.id }}"
+        state: present
+        az: "{{ region }}a"
+        cidr: 172.16.1.0/24
+#        map_public: yes
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        tags:
+          Name: ansible_AZ_1
+          owner: ninja
+      register: az1
+    - debug: var=az1.subnet.id
+    - name: create Subnet for AZ-2
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc.vpc.id }}"
+        state: present
+        az: "{{ region }}b"
+        cidr: 172.16.2.0/24
+#        map_public: yes
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        tags:
+          Name: ansible_AZ_2
+          owner: ninja
+      register: az2
+    - debug: var=az2.subnet.id
+    - name: create Subnet for AZ-3
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc.vpc.id }}"
+        state: present
+        az: "{{ region }}c"
+        cidr: 172.16.3.0/24
+#        map_public: yes
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        tags:
+          Name: ansible_AZ_3
+          owner: ninja
+      register: az3
+    - debug: var=az3.subnet.id
+
+# https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_igw_module.html
+    - name: create Internet Gateway
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ vpc.vpc.id }}"
+        state: present
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        tags:
+          Name: ansible_GW
+          owner: ninja
+      register: inetgw
+    - debug: var=inetgw.gateway_id
+
+# https://docs.ansible.com/ansible/latest/collections/amazon/aws/ec2_vpc_route_table_module.html
+# По-умолчанию маршруты создаются автоматически без доступа в Инет - local
+# Указываем подсети, которые могут стучаться в Инет:
+    - name: create custom Route Table
+      amazon.aws.ec2_vpc_route_table:
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: "{{ region }}"
+        subnets:
+          - "{{ az1.subnet.id }}"
+          - "{{ az2.subnet.id }}"
+          - "{{ az3.subnet.id }}"
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ inetgw.gateway_id }}"
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        tags:
+          Name: ansible_RT
+          owner: ninja

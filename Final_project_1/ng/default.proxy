@@ -1,0 +1,7 @@
+server {
+	listen 80;
+	location / {
+		include proxy_params;
+		proxy_pass http://172.31.23.10:8000;
+	}
+}

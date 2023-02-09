@@ -1,0 +1,17 @@
+FROM ubuntu:22.04
+
+ENV TZ Europe/Kiev
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+RUN apt update
+RUN apt install python3-pip python3-dev build-essential libssl-dev libffi-dev python3-setuptools libmysqlclient-dev -y
+RUN pip install wheel
+RUN mkdir -p /home/ninja/pyapp
+COPY ./pyapp /home/ninja/pyapp
+WORKDIR /home/ninja/pyapp/
+RUN pip install -r /home/ninja/pyapp/requirements.txt
+
+EXPOSE 8000
+
+COPY ./start_py.sh /root/start.sh
+CMD ["/root/start.sh"]

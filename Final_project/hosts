@@ -1,8 +1,0 @@
-[local]
-localhost
-
-[epam]
-3.64.10.247  ansible_user=ubuntu  ansible_ssh_private_key_file=~/.ssh/SSH_key_Frankfurt.pem
-3.124.190.134  ansible_user=ubuntu  ansible_ssh_private_key_file=~/.ssh/SSH_key_Frankfurt.pem
-18.185.87.21  ansible_user=ubuntu  ansible_ssh_private_key_file=~/.ssh/SSH_key_Frankfurt.pem
-18.193.118.75  ansible_user=ubuntu  ansible_ssh_private_key_file=~/.ssh/SSH_key_Frankfurt.pem

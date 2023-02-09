@@ -1,0 +1,40 @@
+- name: Install Nginx, Mysql-client, AWScli, Docker
+  hosts: test1
+  become: yes
+
+  tasks:
+  - name: Updating Repositories
+    shell: "apt update"
+    changed_when: false
+  - name: Installing Nginx
+    apt: name=nginx state=latest
+  - name: Starting Nginx service
+    service: name=nginx state=started enabled=yes
+  - name: Copy SSL-certs
+    copy: src=files/letsencrypt.tar.gz dest=~
+    notify: extract cert archive
+  - name: Copy Nginx-conf
+    copy: src=files/default.https dest=/etc/nginx/sites-available/default
+    notify: reload Nginx
+  - name: Installing Mysql-client
+    apt: name=mysql-client state=latest
+  - name: Installing AWScli
+    apt: name=awscli state=latest
+  - name: Installing Docker
+    apt: name=docker.io state=latest
+  - name: Starting Docker service
+    service: name=docker state=started enabled=yes
+    notify: add user to docker group
+
+  handlers:
+  - name: extract cert archive
+    shell:
+      cmd: "
+            tar xzf ~/letsencrypt.tar.gz -C /etc/;
+            nginx -s reload
+           "
+  - name: reload Nginx
+    shell: "nginx -s reload"
+  - name: add user to docker group
+    shell: "usermod -aG docker ubuntu"
+

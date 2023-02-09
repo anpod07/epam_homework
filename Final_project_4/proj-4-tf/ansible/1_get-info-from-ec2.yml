@@ -1,0 +1,14 @@
+- name: display info about our EC2
+  hosts: test1
+  become: yes
+
+  tasks:
+  - debug:
+      msg:
+      - "Public IP:  {{ansible_default_ipv4.address}}"
+      - "OS:         {{ansible_lsb}}"
+  - name: print Elastic IP
+    shell: "echo \"EIP = {{EIP}}\""
+    register: eip
+  - debug: msg="{{eip.stdout}}"
+

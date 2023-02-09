@@ -1,0 +1,36 @@
+- name: Check installed Soft
+  hosts: test1
+  become: yes
+
+  tasks:
+  - name: Check Docker service is running
+    shell: "systemctl status docker.service"
+    changed_when: false
+    register: out1
+  - debug: msg="{{out1.stdout_lines}}"
+  - name: Check if ubuntu user is in docker Group
+    shell: "grep docker /etc/group"
+    changed_when: false
+    register: out2
+  - debug: msg="{{out2.stdout_lines}}"
+  - name: Check Mysql-client verion
+    shell: "mysql --version"
+    changed_when: false
+    register: out_my
+  - debug: msg="{{out_my.stdout_lines}}"
+  - name: Check AWScli verion
+    shell: "aws --version"
+    changed_when: false
+    register: out_aws
+  - debug: msg="{{out_aws.stdout_lines}}"
+  - name: Check Nginx
+    shell: "ps aux | grep nginx"
+    changed_when: false
+    register: out_ng
+  - debug: msg="{{out_ng.stdout_lines}}"
+  - name: Check Https
+    shell: "curl -w \"%{http_code}\\\n\" -s -o /dev/null https://pyapp.anpod.tk"
+    changed_when: false
+    register: out_cert
+  - debug: msg="{{out_cert.stdout_lines}}"
+

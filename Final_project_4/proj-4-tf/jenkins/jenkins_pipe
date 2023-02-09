@@ -1,0 +1,158 @@
+def EIP = 'some_IP'
+def RDS_ENDPOINT = 'some_URL'
+def IMPORT_RDS = 'some_value'
+
+pipeline {
+  agent {
+//    label 'master'
+    label 'docker-slave-1'
+  }
+
+  options {
+    buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '3')
+    disableConcurrentBuilds()
+    timestamps()
+  }
+
+  triggers {
+    upstream 'proj-4-pipeline'
+  }
+
+  stages {
+//    stage('CleanWorkspace') {
+//      steps {
+//        cleanWs()
+//      }
+//    }
+    stage('GetCodeFromGitHub') {
+      steps {
+        git branch: 'main', credentialsId: 'github-key', url: 'git@github.com:anpod07/proj-4-tf.git'
+        sh '''
+          pwd
+          ls -la
+        '''
+      }
+    }
+    stage('TestAWScliAndTerraform') {
+      steps {
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: "jenkins-aws-ec2_s3",
+          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+          sh '''
+            aws --version
+            aws s3 ls s3://anpod07-tf-statefile
+            terraform --version
+            ansible --version
+          '''
+        }
+      }
+    }
+    stage('ExecTerraformCode') {
+      steps {
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: "jenkins-aws-ec2_s3",
+          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+          dir('terraform') {
+            sh '''
+              pwd
+              terraform init -no-color
+              terraform apply -auto-approve -no-color
+              terraform output | grep elastic_ip | awk \'{print \$3}\' | tr -d \'\\\"\' > eip.txt
+              terraform output | grep rds_address | awk \'{print \$3}\' | tr -d \'\\\"\' > rds.txt
+            '''
+            script {
+              EIP = readFile('eip.txt')
+              RDS_ENDPOINT = readFile('rds.txt')
+              sh "echo \"EIP = ${EIP}\""
+              sh "echo \"RDS_ENDPOINT = ${RDS_ENDPOINT}\""
+            }
+          }
+        }
+      }
+    }
+    stage('CreateHostsForAnsible') {
+      steps {
+        withCredentials([[
+          $class: 'AmazonWebServicesCredentialsBinding',
+          credentialsId: "jenkins-aws-ec2_s3",
+          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+        ]]) {
+          sh '''
+            pwd
+            echo "[test1]" > ansible/hosts
+            aws ec2 describe-instances \
+              --region 'eu-central-1' \
+              --filters 'Name=tag:Name,Values=my_tf_ec2' \
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --output text |\
+              awk '{print $0, " ansible_user=ubuntu"}' >> ansible/hosts
+          '''
+        }
+      }
+    }
+    stage('InstallSoftViaAnsible') {
+      steps {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'jenkins-aws-ec2_ssh_srv1', 
+          keyFileVariable: 'SRV1', 
+          usernameVariable: 'ubuntu'
+        )]) {
+          dir('ansible') {
+            sh '''
+              pwd
+              sleep 3
+            '''
+            sh "ansible-playbook 1_get-info-from-ec2.yml -i hosts --private-key $SRV1 -e EIP=\"${EIP}\""
+            sh 'ansible-playbook 2_pb_aws_install_soft.yml -i hosts --private-key $SRV1'
+            sh 'ansible-playbook 3_pb_aws_check_soft.yml -i hosts --private-key $SRV1'
+          }
+        }
+      }
+    }
+    stage('InputByUser') {
+      steps {
+        script {
+          IMPORT_RDS = input message: 'Import default DB to RDS?', 
+                       parameters: [choice(name: 'action', choices: ['yes','no'], description: 'chose action')]
+        }
+      }
+    }
+    stage('ImportDatabaseViaAnsible') {
+      when {
+        equals(actual: IMPORT_RDS, expected: "yes")
+      }
+      steps {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'jenkins-aws-ec2_ssh_srv1', 
+          keyFileVariable: 'SRV1', 
+          usernameVariable: 'ubuntu'
+        )]) {
+          dir('ansible') {
+            sh "ansible-playbook 4_pb_aws_import-db.yml -i hosts --private-key $SRV1 -e RDS_ENDPOINT=\"${RDS_ENDPOINT}\""
+          }
+        }
+      }
+    }
+    stage('ReplaceDockerImageViaAnsible') {
+      steps {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'jenkins-aws-ec2_ssh_srv1', 
+          keyFileVariable: 'SRV1', 
+          usernameVariable: 'ubuntu'
+        )]) {
+          dir('ansible') {
+            sh 'ansible-playbook 5_pb_aws_replace_docker.yml -i hosts --private-key $SRV1'
+          }
+        }
+      }
+    }
+  }
+}
+

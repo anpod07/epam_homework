@@ -1,0 +1,39 @@
+- name: Replace Docker
+  hosts: test1
+  become: yes
+
+  tasks:
+  - name: Pull image
+    shell: "docker pull anpod07/proj-4-pyapp:latest"
+  - name: Replace image
+    shell:
+      cmd: "
+            if [ -n \"`docker ps -a | grep myapp`\" ];
+             then 
+              docker stop myapp;
+              docker rmi myapp:latest;
+            fi
+           "
+  - name: Tag image
+    shell: "docker tag anpod07/proj-4-pyapp:latest myapp:latest"
+  - name: Run new tagged image
+    shell: "docker run -d --rm --name myapp -p 8000:8000 myapp:latest"
+  - name: Remove pulled image
+    shell: "docker rmi anpod07/proj-4-pyapp:latest"
+
+  - name: Check Docker service is running
+    shell: "systemctl status docker.service"
+    changed_when: false
+    register: out1
+  - debug: msg="{{out1.stdout_lines}}"
+  - name: Check docker images
+    shell: "docker images"
+    changed_when: false
+    register: out2
+  - debug: msg="{{out2.stdout_lines}}"
+  - name: Check docker ps
+    shell: "docker ps --no-trunc"
+    changed_when: false
+    register: out3
+  - debug: msg="{{out3.stdout_lines}}"
+

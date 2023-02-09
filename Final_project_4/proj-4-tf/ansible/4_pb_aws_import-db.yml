@@ -1,0 +1,19 @@
+- name: MySQL DB, Import DB to RDS
+  hosts: test1
+  become: yes
+
+  tasks:
+  - name: get Mysql DB from S3
+    shell: "aws s3 cp s3://anpod07-rds/db_test.sql ~/"
+  - name: view copied DB-file
+    shell: "ls -l ~/"
+    register: out_ls1
+  - debug: msg="{{out_ls1.stdout_lines}}"
+
+  - name: import DB to RDS
+    shell: "mysql -h {{RDS_ENDPOINT}} -u admin -p07secret07 < ~/db_test.sql"
+  - name: check DB on RDS
+    shell: "mysql -h {{RDS_ENDPOINT}} -u admin -p07secret07 -e \"show databases; use db_test; show tables;\""
+    register: ssh_check
+  - debug: msg="{{ssh_check.stdout_lines}}"
+

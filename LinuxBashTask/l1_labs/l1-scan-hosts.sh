@@ -12,7 +12,7 @@ Help()
 
 Target()
 {
- if [ -z "$1" ]; then echo "no target setted"; exit 2; fi
+ if [ -z "$2" ]; then echo "no target setted"; exit 2; fi
  arr=("$@")
  unset "arr[0]"
  Parm=`echo ${arr[@]}`
